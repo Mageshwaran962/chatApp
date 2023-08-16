@@ -7,14 +7,14 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {loginStyles} from '../styles/LoginStyle';
 import {colors, constants} from '../styles/GlobalStyles';
 import CustomButton from '../components/CustomButton';
 import ToastNotification from '../components/ToastNotification';
 import axios from 'axios';
 import {registerRoute} from '../utils/APIRoutes';
-import {storeData} from '../utils/LocalStorage';
+import {storeData, getData} from '../utils/LocalStorage';
 import {REACT_NATIVE_APP_ASYNC_KEY} from '@env';
 
 export default function Register({navigation}) {
@@ -71,6 +71,11 @@ export default function Register({navigation}) {
       }
     }
   };
+  useEffect(() => {
+    if (getData(REACT_NATIVE_APP_ASYNC_KEY)) {
+      navigation.navigate('chat');
+    }
+  }, []);
   return (
     <SafeAreaView style={loginStyles.safeArae}>
       <View style={loginStyles.safeFlex}>

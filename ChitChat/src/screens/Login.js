@@ -7,14 +7,14 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {loginStyles} from '../styles/LoginStyle';
 import {colors, constants} from '../styles/GlobalStyles';
 import CustomButton from '../components/CustomButton';
 import ToastNotification from '../components/ToastNotification';
 import axios from 'axios';
-import {registerRoute} from '../utils/APIRoutes';
-import {storeData} from '../utils/LocalStorage';
+import {loginRoute} from '../utils/APIRoutes';
+import {getData, storeData} from '../utils/LocalStorage';
 import {REACT_NATIVE_APP_ASYNC_KEY} from '@env';
 
 export default function Login({navigation}) {
@@ -22,46 +22,41 @@ export default function Login({navigation}) {
   const [messages, setMessages] = useState('default');
   const [values, setValues] = useState({
     username: '',
-    email: '',
     password: '',
-    confirmPassword: '',
   });
   const handleChange = (event, name) => {
     setValues({...values, [name]: event.nativeEvent.text});
   };
   const handleValidation = () => {
-    const {password, confirmPassword, username, email} = values;
-    if (password !== confirmPassword) {
-      setMessages('Password and confirm password should be same.');
-      return false;
-    } else if (username.length < 3) {
+    const {password, username} = values;
+    if (username.length < 3) {
       setMessages('Username should be greater than 3 characters.');
       return false;
     } else if (password.length < 8) {
       setMessages('Password should be equal or greater than 8 characters.');
       return false;
-    } else if (email === '') {
-      setMessages('Email is required.');
-      return false;
     }
-
     return true;
   };
+  useEffect(() => {
+    if (getData(REACT_NATIVE_APP_ASYNC_KEY)) {
+      navigation.navigate('chat');
+    }
+  }, []);
   const handleSubmit = async event => {
     if (handleValidation()) {
-      const {email, username, password} = values;
+      const {username, password} = values;
       try {
-        const {data} = await axios.post(registerRoute, {
+        const {data} = await axios.post(loginRoute, {
           username,
-          email,
           password,
         });
+
         if (data.status === false) {
           setMessages(data.msg);
         }
         if (data.status === true) {
           setMessages(data.msg);
-          storeData(REACT_NATIVE_APP_ASYNC_KEY, JSON.stringify(data.user));
           setTimeout(() => {
             navigation.navigate('chat');
           }, 3000);
@@ -92,33 +87,18 @@ export default function Login({navigation}) {
           />
           <TextInput
             style={loginStyles.input_style}
-            placeholder={constants.login.email}
-            placeholderTextColor={'white'}
-            onChange={e => handleChange(e, 'email')}
-          />
-          <TextInput
-            style={loginStyles.input_style}
             placeholder={constants.login.password}
             placeholderTextColor={'white'}
             onChange={e => handleChange(e, 'password')}
           />
-          <TextInput
-            style={loginStyles.input_style}
-            placeholder={constants.login.confirm_password}
-            placeholderTextColor={'white'}
-            onChange={e => handleChange(e, 'confirmPassword')}
-          />
-          <CustomButton
-            title={constants.login.create_user}
-            callBack={handleSubmit}
-          />
+          <CustomButton title={constants.login.login} callBack={handleSubmit} />
           <View style={loginStyles.bottom_row_style}>
             <Text style={loginStyles.bottom_text_style}>
               {constants.login.already_have_account.toLocaleUpperCase()}
             </Text>
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate('login');
+                navigation.navigate('chat');
               }}>
               <Text
                 style={[

@@ -7,6 +7,7 @@ export const colors = {
   blue_link: '#4e0eff',
   toast_error: '#8f0148',
   toast_success: '#027a44',
+  border_color_selected: '#4e0eff',
 };
 
 export const constants = {
